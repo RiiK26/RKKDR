@@ -1,3 +1,4 @@
+# clang 22
 AccessModifierOffset: -1
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: Consecutive
