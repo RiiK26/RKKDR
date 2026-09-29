@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+max_line_length = 120
+trim_trailing_whitespace = true
+
+[*.{json,html,htm,xml,svg,js,ts,jsx,tsx,cjs,mjs}]
+indent_style = tab
+indent_size = 2
+
+[*.{yml,yaml,c,cpp,h,hpp,cc,cxx,css,scss,less,rb,lua}]
+indent_style = space
+indent_size = 2
+
+[*.{go,mod,sum,Makefile,mk}]
+indent_style = tab
+indent_size = 4
+
+[*.{py,pyi,cs,csx,java,rs,sh,bash,zsh,bat,ps1,md,mdx,txt}]
+indent_style = space
+indent_size = 4
