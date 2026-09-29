@@ -27,9 +27,9 @@
  */
 struct rkkdr_keyboard_cmd
 {
-    __u32 type;
-    __u32 code;
-    __s32 value;
+  __u32 type;
+  __u32 code;
+  __s32 value;
 };
 
 /* ============================================================
@@ -37,9 +37,9 @@ struct rkkdr_keyboard_cmd
  * ============================================================ */
 
 /* Mouse command types */
-#define RKKDR_MOUSE_REL 1    /* Relative mouse movement */
-#define RKKDR_MOUSE_ABS 2    /* Absolute mouse positioning */
-#define RKKDR_MOUSE_BTN 3    /* Mouse button press/release */
+#define RKKDR_MOUSE_REL    1 /* Relative mouse movement */
+#define RKKDR_MOUSE_ABS    2 /* Absolute mouse positioning */
+#define RKKDR_MOUSE_BTN    3 /* Mouse button press/release */
 #define RKKDR_MOUSE_SCROLL 4 /* Mouse scroll wheel */
 
 /*
@@ -67,10 +67,10 @@ struct rkkdr_keyboard_cmd
  */
 struct rkkdr_mouse_cmd
 {
-    __u32 type;
-    __u32 code;
-    __s32 value;
-    __s32 extra;
+  __u32 type;
+  __u32 code;
+  __s32 value;
+  __s32 extra;
 };
 
 /* ============================================================
@@ -79,13 +79,13 @@ struct rkkdr_mouse_cmd
 
 struct rkkdr_screen_info
 {
-    __u32 width;
-    __u32 height;
-    __u32 virtual_width;
-    __u32 virtual_height;
-    __u32 bpp;
-    __u32 line_length;
-    __u64 fb_size;
+  __u32 width;
+  __u32 height;
+  __u32 virtual_width;
+  __u32 virtual_height;
+  __u32 bpp;
+  __u32 line_length;
+  __u64 fb_size;
 };
 
 // ioctl magic number for RKKDR
