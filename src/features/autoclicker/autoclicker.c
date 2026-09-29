@@ -78,5 +78,10 @@ void autoclicker_exit(void)
   // Stop the background worker
   cancel_delayed_work_sync(&click_work);
 
+  if (click_held) {
+    rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
+    click_held = false;
+  }
+
   pr_info("[[KRNL]AutoClicker]: safely shut down.\n");
 }
