@@ -11,7 +11,7 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Syakir");
 MODULE_DESCRIPTION("RKKDR - Kernel-level input automation & screen access");
-MODULE_VERSION("0.3");
+MODULE_VERSION("0.4");
 
 static int __init my_kernel_driver_init(void)
 {

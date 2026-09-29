@@ -9,7 +9,7 @@ if ! command -v dkms &> /dev/null; then
 fi
 
 MODULE_NAME="RKKDR"
-MODULE_VERSION="0.0.3"
+MODULE_VERSION="0.0.4"
 DKMS_SRC_DIR="/usr/src/${MODULE_NAME}-${MODULE_VERSION}"
 
 echo "Installing ${MODULE_NAME} version ${MODULE_VERSION} to DKMS..."
