@@ -9,21 +9,39 @@
 
 // Module parameters (these create files in
 // /sys/module/RKKDR/parameters/)
-static bool enable = false;
-module_param(enable, bool, 0644);
-MODULE_PARM_DESC(enable, "Enable the auto-clicker (1 = ON, 0 = OFF)");
-
-static int interval_ms = 100;
-module_param(interval_ms, int, 0644);
-MODULE_PARM_DESC(interval_ms, "Interval between clicks in milliseconds");
-
-static bool hold_click = false;
-module_param(hold_click, bool, 0644);
-MODULE_PARM_DESC(hold_click, "Keep the left mouse button held while enabled");
+static bool enable      = false;
+static int  interval_ms = 100;
+static bool hold_click  = false;
 
 // The background worker that will fire the clicks
 static struct delayed_work click_work;
-static bool                click_held = false;
+static bool                click_held      = false;
+static bool                autoclick_ready = false;
+
+static int autoclick_set_bool(const char* val, const struct kernel_param* kp)
+{
+  int ret = param_set_bool(val, kp);
+
+  if (!ret && READ_ONCE(autoclick_ready)) {
+    mod_delayed_work(system_wq, &click_work, 0);
+  }
+
+  return ret;
+}
+
+static const struct kernel_param_ops autoclick_bool_ops = {
+  .set = autoclick_set_bool,
+  .get = param_get_bool,
+};
+
+module_param_cb(enable, &autoclick_bool_ops, &enable, 0644);
+MODULE_PARM_DESC(enable, "Enable the auto-clicker (1 = ON, 0 = OFF)");
+
+module_param(interval_ms, int, 0644);
+MODULE_PARM_DESC(interval_ms, "Interval between clicks in milliseconds");
+
+module_param_cb(hold_click, &autoclick_bool_ops, &hold_click, 0644);
+MODULE_PARM_DESC(hold_click, "Keep the left mouse button held while enabled");
 
 // This function runs in the background and simulates the click
 static void autoclick_worker_func(struct work_struct* work)
@@ -59,18 +77,17 @@ static void autoclick_worker_func(struct work_struct* work)
     safe_interval = 10;
   }
 
-  // Schedule the next click (if enabled, otherwise sleep and check again)
-  // Even if disabled, we keep the loop alive so it can wake up when 'enable' is
-  // changed
-  int wait_time = enabled ? (holding ? 10 : safe_interval) : 500;
-  schedule_delayed_work(&click_work, msecs_to_jiffies(wait_time));
+  if (enabled && !holding) {
+    schedule_delayed_work(&click_work, msecs_to_jiffies(safe_interval));
+  }
 }
 
 int autoclicker_init(void)
 {
   // Start the background clicking loop
   INIT_DELAYED_WORK(&click_work, autoclick_worker_func);
-  schedule_delayed_work(&click_work, msecs_to_jiffies(500));
+  WRITE_ONCE(autoclick_ready, true);
+  schedule_delayed_work(&click_work, 0);
 
   pr_info("[[KRNL]AutoClicker]: initialized. Disabled by default.\n");
   return 0;
@@ -79,6 +96,7 @@ int autoclicker_init(void)
 void autoclicker_exit(void)
 {
   // Stop the background worker
+  WRITE_ONCE(autoclick_ready, false);
   cancel_delayed_work_sync(&click_work);
 
   if (click_held) {
