@@ -28,66 +28,55 @@ static bool                click_held = false;
 // This function runs in the background and simulates the click
 static void autoclick_worker_func(struct work_struct* work)
 {
-    if (enable && hold_click)
-    {
-        if (!click_held)
-        {
-            rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
-            click_held = true;
-        }
+  if (enable && hold_click) {
+    if (!click_held) {
+      rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
+      click_held = true;
     }
-    else if (click_held)
-    {
-        rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
-        click_held = false;
-    }
-    else if (enable)
-    {
-        // Send Mouse DOWN
-        rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
+  }
+  else if (click_held) {
+    rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
+    click_held = false;
+  }
+  else if (enable) {
+    // Send Mouse DOWN
+    rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
 
-        // Small delay to simulate human click duration
-        msleep(20);
+    // Small delay to simulate human click duration
+    msleep(20);
 
-        // Send Mouse UP
-        rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
-    }
+    // Send Mouse UP
+    rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
+  }
 
-    // Safety limit: if the interval is too small, it could lock up the kernel
-    // worker thread
-    int safe_interval = interval_ms;
-    if (safe_interval < 10)
-    {
-        safe_interval = 10;
-    }
+  // Safety limit: if the interval is too small, it could lock up the kernel
+  // worker thread
+  int safe_interval = interval_ms;
+  if (safe_interval < 10) {
+    safe_interval = 10;
+  }
 
-    // Schedule the next click (if enabled, otherwise sleep and check again)
-    // Even if disabled, we keep the loop alive so it can wake up when 'enable' is
-    // changed
-    int wait_time = enable && !hold_click ? safe_interval : 50;
-    schedule_delayed_work(&click_work, msecs_to_jiffies(wait_time));
+  // Schedule the next click (if enabled, otherwise sleep and check again)
+  // Even if disabled, we keep the loop alive so it can wake up when 'enable' is
+  // changed
+  int wait_time = enable ? safe_interval : 500;
+  schedule_delayed_work(&click_work, msecs_to_jiffies(wait_time));
 }
 
 int autoclicker_init(void)
 {
-    // Start the background clicking loop
-    INIT_DELAYED_WORK(&click_work, autoclick_worker_func);
-    schedule_delayed_work(&click_work, msecs_to_jiffies(500));
+  // Start the background clicking loop
+  INIT_DELAYED_WORK(&click_work, autoclick_worker_func);
+  schedule_delayed_work(&click_work, msecs_to_jiffies(500));
 
-    pr_info("[[KRNL]AutoClicker]: initialized. Disabled by default.\n");
-    return 0;
+  pr_info("[[KRNL]AutoClicker]: initialized. Disabled by default.\n");
+  return 0;
 }
 
 void autoclicker_exit(void)
 {
-    // Stop the background worker
-    cancel_delayed_work_sync(&click_work);
+  // Stop the background worker
+  cancel_delayed_work_sync(&click_work);
 
-    if (click_held)
-    {
-        rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
-        click_held = false;
-    }
-
-    pr_info("[[KRNL]AutoClicker]: safely shut down.\n");
+  pr_info("[[KRNL]AutoClicker]: safely shut down.\n");
 }
