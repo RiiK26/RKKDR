@@ -1,15 +1,32 @@
-# clang 22
-AccessModifierOffset: -1
+AccessModifierOffset: -2
 AlignAfterOpenBracket: BlockIndent
-AlignConsecutiveAssignments: Consecutive
-AlignConsecutiveDeclarations: Consecutive
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignFunctionDeclarations: false
+
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+
 AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1
+
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortEnumsOnASingleLine: false
-AllowShortIfStatementsOnASingleLine: false
+AllowShortEnumsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Never
 
 BreakTemplateDeclarations: Yes
 BasedOnStyle: WebKit
@@ -21,35 +38,38 @@ BraceWrapping:
   AfterFunction: true
   AfterClass: true
   AfterStruct: true
-  AfterControlStatement: true
+  AfterControlStatement: false
   BeforeElse: true
   AfterEnum: true
+  AfterNamespace: true
 
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
-BreakStringLiterals: false
+BreakStringLiterals: true
 
-ColumnLimit: 100
+ColumnLimit: 120
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
+CompactNamespaces: true
 
 FixNamespaceComments: true
 
 IncludeBlocks: Regroup
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash
-IndentWidth: 4
+IndentWidth: 2
 
 MaxEmptyLinesToKeep: 2
 
-NamespaceIndentation: None
+NamespaceIndentation: All
 
 PackConstructorInitializers: Never
+PointerAlignment: Left
 
 ReflowComments: false
 
-SortIncludes: true
-SortUsingDeclarations: false
+SortIncludes: Never
+SortUsingDeclarations: Never
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCaseColon: true
