@@ -17,13 +17,31 @@ static int interval_ms = 100;
 module_param(interval_ms, int, 0644);
 MODULE_PARM_DESC(interval_ms, "Interval between clicks in milliseconds");
 
+static bool hold_click = false;
+module_param(hold_click, bool, 0644);
+MODULE_PARM_DESC(hold_click, "Keep the left mouse button held while enabled");
+
 // The background worker that will fire the clicks
 static struct delayed_work click_work;
+static bool                click_held = false;
 
 // This function runs in the background and simulates the click
 static void autoclick_worker_func(struct work_struct* work)
 {
-    if (enable)
+    if (enable && hold_click)
+    {
+        if (!click_held)
+        {
+            rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
+            click_held = true;
+        }
+    }
+    else if (click_held)
+    {
+        rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
+        click_held = false;
+    }
+    else if (enable)
     {
         // Send Mouse DOWN
         rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
@@ -46,7 +64,7 @@ static void autoclick_worker_func(struct work_struct* work)
     // Schedule the next click (if enabled, otherwise sleep and check again)
     // Even if disabled, we keep the loop alive so it can wake up when 'enable' is
     // changed
-    int wait_time = enable ? safe_interval : 500;
+    int wait_time = enable && !hold_click ? safe_interval : 50;
     schedule_delayed_work(&click_work, msecs_to_jiffies(wait_time));
 }
 
@@ -64,6 +82,12 @@ void autoclicker_exit(void)
 {
     // Stop the background worker
     cancel_delayed_work_sync(&click_work);
+
+    if (click_held)
+    {
+        rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
+        click_held = false;
+    }
 
     pr_info("[[KRNL]AutoClicker]: safely shut down.\n");
 }
