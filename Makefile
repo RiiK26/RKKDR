@@ -3,7 +3,8 @@ KDIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 BUILD_DIR := $(PWD)/build
 SRC_DIR := $(PWD)/src
-RELEASE_DIR := $(PWD)/release
+
+RELEASE_DIR := $(BUILD_DIR)/release
 KEYS_DIR := $(PWD)/keys
 
 SUDO_CMD ?= sudo
@@ -27,7 +28,6 @@ compile: prep
 	$(MAKE) -C $(KDIR) M=$(BUILD_DIR) modules
 	@cp $(BUILD_DIR)/$(DRIVER_NAME).ko $(RELEASE_DIR)/
 
-
 sign: compile
 	@mkdir -p $(KEYS_DIR)
 	@if [ ! -f $(KEYS_DIR)/MOK.priv ] || [ ! -f $(KEYS_DIR)/MOK.der ]; then \
@@ -38,14 +38,15 @@ sign: compile
 
 compile_commands: prep compile
 	$(MAKE) -C $(KDIR) M=$(BUILD_DIR) compile_commands.json
-	@cp $(BUILD_DIR)/compile_commands.json $(PWD)/compile_commands.json
-	-@sed -i 's|$(BUILD_DIR)|$(SRC_DIR)|g' $(PWD)/compile_commands.json
+	-@sed -i 's|$(BUILD_DIR)|$(SRC_DIR)|g' $(BUILD_DIR)/compile_commands.json
 
 post_clean: sign compile_commands
-	@rm -rf $(BUILD_DIR)
+	@echo "Cleanup Kbuild intermediate  files..."
+	@find $(BUILD_DIR) -mindepth 1 -maxdepth 1 ! -name "release" ! -name "compile_commands.json" -exec rm -rf {} +
 
 clean:
-	@$(SUDO_CMD) rm -rf $(BUILD_DIR)/* $(RELEASE_DIR)/* $(PWD)/compile_commands.json 2>/dev/null || rm -rf $(BUILD_DIR)/* $(RELEASE_DIR)/* $(PWD)/compile_commands.json
+	@echo "Request removing build folder"
+	@$(SUDO_CMD) rm -rf $(BUILD_DIR) 2>/dev/null || rm -rf $(BUILD_DIR)
 
 load: all
 	@echo "Unloading old driver (if it exists)..."
