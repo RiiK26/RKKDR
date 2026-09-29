@@ -28,7 +28,10 @@ static bool                click_held = false;
 // This function runs in the background and simulates the click
 static void autoclick_worker_func(struct work_struct* work)
 {
-  if (enable && hold_click) {
+  bool enabled = READ_ONCE(enable);
+  bool holding = READ_ONCE(hold_click);
+
+  if (enabled && holding) {
     if (!click_held) {
       rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
       click_held = true;
@@ -38,7 +41,7 @@ static void autoclick_worker_func(struct work_struct* work)
     rkkdr_send_mouse_btn_event(BTN_LEFT, 0);
     click_held = false;
   }
-  else if (enable) {
+  else if (enabled) {
     // Send Mouse DOWN
     rkkdr_send_mouse_btn_event(BTN_LEFT, 1);
 
@@ -51,7 +54,7 @@ static void autoclick_worker_func(struct work_struct* work)
 
   // Safety limit: if the interval is too small, it could lock up the kernel
   // worker thread
-  int safe_interval = interval_ms;
+  int safe_interval = READ_ONCE(interval_ms);
   if (safe_interval < 10) {
     safe_interval = 10;
   }
@@ -59,7 +62,7 @@ static void autoclick_worker_func(struct work_struct* work)
   // Schedule the next click (if enabled, otherwise sleep and check again)
   // Even if disabled, we keep the loop alive so it can wake up when 'enable' is
   // changed
-  int wait_time = enable ? safe_interval : 500;
+  int wait_time = enabled ? (holding ? 10 : safe_interval) : 500;
   schedule_delayed_work(&click_work, msecs_to_jiffies(wait_time));
 }
 
